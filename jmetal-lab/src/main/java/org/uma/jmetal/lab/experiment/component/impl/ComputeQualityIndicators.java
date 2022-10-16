@@ -63,7 +63,7 @@ public class ComputeQualityIndicators<S extends Solution<?>, Result extends List
 
           JMetalLogger.logger.info("RF: " + referenceFrontName);
 
-          double[][] referenceFront = VectorUtils.readVectors(referenceFrontName, ",");
+          double[][] referenceFront = VectorUtils.readVectors(referenceFrontName, " ");
           double[][] normalizedReferenceFront = NormalizeUtils.normalize(referenceFront);
 
           indicator.setReferenceFront(normalizedReferenceFront);
@@ -84,7 +84,7 @@ public class ComputeQualityIndicators<S extends Solution<?>, Result extends List
                     experiment.getOutputParetoFrontFileName() + run + ".csv";
             double[][] front = new double[0][];
             try {
-              front = VectorUtils.readVectors(frontFileName,",");
+              front = VectorUtils.readVectors(frontFileName," ");
             } catch (IOException e) {
               e.printStackTrace();
             }

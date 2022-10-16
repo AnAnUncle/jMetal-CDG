@@ -67,8 +67,8 @@ public class ExperimentAlgorithm<S extends Solution<?>, Result extends List<S>> 
       Result population = algorithm.getResult();
 
       new SolutionListOutput(population)
-          .setVarFileOutputContext(new DefaultFileOutputContext(varFile, ","))
-          .setFunFileOutputContext(new DefaultFileOutputContext(funFile, ","))
+          .setVarFileOutputContext(new DefaultFileOutputContext(varFile, " "))
+          .setFunFileOutputContext(new DefaultFileOutputContext(funFile, " "))
           .print();
     } catch (Exception exception) {
       JMetalLogger.logger.warning("Execution failed: " + funFile + " has not been created.");

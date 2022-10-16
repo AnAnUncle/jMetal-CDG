@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import org.apache.commons.beanutils.BeanUtils;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.operator.crossover.CrossoverOperator;
 import org.uma.jmetal.problem.Problem;
@@ -99,18 +100,18 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
   protected CrossoverOperator<S> crossoverOperator;
 
   public AbstractCDG(
-      Problem<S> problem,
-      int populationSize,
-      int resultPopulationSize,
-      int maxEvaluations,
-      CrossoverOperator<S> crossoverOperator,
-      double neighborhoodSelectionProbability,
-      double sigma_,
-      int k_,
-      int t_,
-      int subproblemNum_,
-      int childGrid_,
-      int childGridNum_) {
+          Problem<S> problem,
+          int populationSize,
+          int resultPopulationSize,
+          int maxEvaluations,
+          CrossoverOperator<S> crossoverOperator,
+          double neighborhoodSelectionProbability,
+          double sigma_,
+          int k_,
+          int t_,
+          int subproblemNum_,
+          int childGrid_,
+          int childGridNum_) {
     this.problem = problem;
     this.populationSize = populationSize;
     this.resultPopulationSize = resultPopulationSize;
@@ -447,7 +448,7 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
           for (int ni = 0; ni < subPNum[i]; ni++) {
             for (int nj = 0; nj < team.get(subP[i][ni]).size(); nj++) {
               neighborhood[parentIndex][neighborhoodNum[parentIndex]] =
-                  team.get(subP[i][ni]).get(nj);
+                      team.get(subP[i][ni]).get(nj);
               neighborhoodNum[parentIndex]++;
             }
           }
@@ -457,8 +458,13 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
   }
 
   protected void updateBorder() {
-    getBorder();
-
+    try
+    {
+      getBorder();
+    }catch(Exception e1)
+    {
+      System.out.println("error");
+    }
     paretoFilter();
 
     double coefficient = 1 + (1 - evaluations / maxEvaluations) * 0.15;
@@ -472,7 +478,7 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
           }
   }
 
-  protected void getBorder() {
+  protected void getBorder() throws Exception {
     int[] flag = new int[problem.getNumberOfObjectives()];
     double[] minFunValue = new double[problem.getNumberOfObjectives()];
 
@@ -502,7 +508,9 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
             od = j;
             break;
           }
-        tempBorder.get(od).add(population.get(i));
+        S newSolution = (S)problem.createSolution();
+        BeanUtils.copyProperties(newSolution, population.get(i));
+        tempBorder.get(od).add(newSolution);
       }
     }
   }
@@ -523,9 +531,9 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
           for (int j = 0; j < problem.getNumberOfObjectives(); j++) {
             if (i != j) {
               if (tempBorder.get(i).get(p).objectives()[j]
-                  <= tempBorder.get(i).get(q).objectives()[j]) sum1++;
+                      <= tempBorder.get(i).get(q).objectives()[j]) sum1++;
               if (tempBorder.get(i).get(p).objectives()[j]
-                  < tempBorder.get(i).get(q).objectives()[j]) sum2++;
+                      < tempBorder.get(i).get(q).objectives()[j]) sum2++;
             }
           }
           if (sum1 == nmbOfObjs && sum2 > 0) {
@@ -674,8 +682,8 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
 
     if (specialPopulation.size() > 2 * problem.getNumberOfObjectives()) {
       for (int i = specialPopulation.size() - 1;
-          i > (2 * problem.getNumberOfObjectives() - 1);
-          i--) {
+           i > (2 * problem.getNumberOfObjectives() - 1);
+           i--) {
         specialPopulation.remove(i);
         spPopulationOrder.remove(i);
       }
@@ -702,9 +710,9 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
     for (int i = 0; i < population.size(); i++) {
       S individual = population.get(i);
       if (individual.objectives()[0] > nadirPoint[0]
-          || individual.objectives()[1] > nadirPoint[1]
-          || individual.objectives()[2] > nadirPoint[2]
-          || !isInner(individual)) {
+              || individual.objectives()[1] > nadirPoint[1]
+              || individual.objectives()[2] > nadirPoint[2]
+              || !isInner(individual)) {
         badSolution[badSolutionNum] = i;
         badSolutionNum++;
       }
@@ -810,14 +818,14 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
       int objD = (int) (i / perObjSubproblemNum);
 
       Collections.sort(
-          subproblem.get(i),
-          new Comparator<S>() {
-            public int compare(S o1, S o2) {
-              double x = o1.objectives()[objD];
-              double y = o2.objectives()[objD];
-              return (x == y) ? 0 : (y < x) ? 1 : (-1);
-            }
-          });
+              subproblem.get(i),
+              new Comparator<S>() {
+                public int compare(S o1, S o2) {
+                  double x = o1.objectives()[objD];
+                  double y = o2.objectives()[objD];
+                  return (x == y) ? 0 : (y < x) ? 1 : (-1);
+                }
+              });
     }
   }
 
@@ -857,13 +865,13 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
       }
 
       Collections.sort(
-          list,
-          new Comparator<Integer>() {
-            @Override
-            public int compare(Integer x, Integer y) {
-              return (x == y) ? 0 : (y < x) ? 1 : (-1);
-            }
-          });
+              list,
+              new Comparator<Integer>() {
+                @Override
+                public int compare(Integer x, Integer y) {
+                  return (x == y) ? 0 : (y < x) ? 1 : (-1);
+                }
+              });
 
       for (int j = 0; j < problem.getNumberOfObjectives(); j++) {
         setRank(population.get(i), j, list.get(j));
@@ -873,19 +881,19 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
 
   protected void lexicographicSort() {
     Collections.sort(
-        population,
-        new Comparator<S>() {
-          @Override
-          public int compare(S o1, S o2) {
-            for (int i = 0; i < problem.getNumberOfObjectives(); i++) {
-              int x = getRank(o1, i);
-              int y = getRank(o2, i);
-              if (y < x) return 1;
-              if (x < y) return -1;
-            }
-            return 0;
-          }
-        });
+            population,
+            new Comparator<S>() {
+              @Override
+              public int compare(S o1, S o2) {
+                for (int i = 0; i < problem.getNumberOfObjectives(); i++) {
+                  int x = getRank(o1, i);
+                  int y = getRank(o2, i);
+                  if (y < x) return 1;
+                  if (x < y) return -1;
+                }
+                return 0;
+              }
+            });
   }
 
   protected void chooseSolution() {
@@ -929,7 +937,7 @@ public abstract class AbstractCDG<S extends Solution<?>> implements Algorithm<Li
    * @param neighbourType neighbour type
    */
   protected List<Integer> matingSelection(
-      int subproblemId, int numberOfSolutionsToSelect, NeighborType neighbourType) {
+          int subproblemId, int numberOfSolutionsToSelect, NeighborType neighbourType) {
     int neighbourSize;
     int selectedSolution;
 
